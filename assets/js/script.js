@@ -1,6 +1,3 @@
-// 7. generate pw (32 special chars)
-// 8. display pw
-
 // Easier to read than standalone numbers
 const LOWER = 0;
 const UPPER = 1;
@@ -15,7 +12,7 @@ var specialChars;
 
 var letterStr = "abcdefghijklmnopqrstuvwxyz";
 var numberStr = "0123456789";
-var specCharStr = "\`~!@#$%^&*()_-+={}[]|\\;:\'\",<.>/?";
+var specCharStr = " !\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~";
 
 // Starter code
 var generateBtn = document.querySelector("#generate");
@@ -69,7 +66,9 @@ function resetVars() {
 // Get password length from user, repeat if invalid input
 function getLength() {
   while (true) {
-    length = prompt("Enter password length from 8 to 128.");
+
+    // I need a number, not a string
+    length = Number(prompt("Enter password length from 8 to 128."));
 
     if ((length >= 8 && length <= 128) || length === null)
       return;
@@ -140,27 +139,56 @@ function includeAllCharTypes() {
 function randomizePassword() {
 
   // Keeping track of these for strength of password purposes
-  // var lowerSelected = false;
-  // var upperSelected = false;
-  // var numSelected = false;
-  // var specCharSelected = false;
-  // var validPW = false;
+  var lowerSelected = false;
+  var upperSelected = false;
+  var numSelected = false;
+  var specCharSelected = false;
 
-  var charsToUse = popCharToUseArray();
+  // populate array with user selected character types
+  var charTypesToUse = populateCharTypesToUse();
 
   var randPW = "";
 
   for (var i = length; i > 0; i--) {
 
-    var cTypeToUse = charsToUse[generateRandomNumber(0, charsToUse.length)];
+    // pull random character type from array
+    var selectedCharType = charTypesToUse[genRandNum(0, charTypesToUse.length - 1)];
 
+    // only run this if i within bounds - don't run all four checks every loop
+    if (i <= 4) {
+
+      // forces desired character types at end of password if they aren't already present - I'm sure
+      // this is not good cryptographic practice, but for this assignment I am only interested in
+      // making sure there are at least one of each desired character type present
+      if (i === 4)
+        selectedCharType = ensureAllCharTypesPresent(selectedCharType, LOWER, lowerSelected);
+      else if (i === 3)
+        selectedCharType = ensureAllCharTypesPresent(selectedCharType, UPPER, upperSelected);
+      else if (i === 2)
+        selectedCharType = ensureAllCharTypesPresent(selectedCharType, NUM, numSelected);
+      else
+        selectedCharType = ensureAllCharTypesPresent(selectedCharType, SPECIAL, specCharSelected);
+    }
+
+    // Keeps track of what character types have been picked
+    if (!lowerSelected && selectedCharType === LOWER)
+      lowerSelected = true;
+    else if (!upperSelected && selectedCharType === UPPER)
+      upperSelected = true;
+    else if (!numSelected && selectedCharType === NUM)
+      numSelected = true;
+    else if (!specCharSelected && selectedCharType === SPECIAL)
+      specCharSelected = true;
+
+    // append selected character to password
+    randPW += getCorrectChar(selectedCharType);
   }
 
   return randPW;
 }
 
 // populates array with desired password character types
-function popCharToUseArray() {
+function populateCharTypesToUse() {
   var charsToUse = [];
 
   if (lowercase)
@@ -179,8 +207,42 @@ function popCharToUseArray() {
 }
 
 // Gary supplied this random number generator code
-function generateRandomNumber(min, max) {
+function genRandNum(min, max) {
   return Math.floor(Math.random() * (max - min + 1) + min);
+}
+
+// if password needs a certain missing character type this supplies it
+function ensureAllCharTypesPresent(selectedCharType, cTypeToCheckFor, isTypePresent) {
+
+  // what types did user request
+  var neededTypes = populateCharTypesToUse();
+  var checkForType = false;
+
+  // check array for presence of the type that was passed in
+  neededTypes.forEach(function (arrEl) {
+    if (arrEl === cTypeToCheckFor);
+    checkForType = true;
+  });
+
+  // change character type to force desired character type into end of password if necessary
+  if (checkForType)
+    if ((selectedCharType !== cTypeToCheckFor) && !isTypePresent)
+      selectedCharType = cTypeToCheckFor;
+
+  return selectedCharType;
+}
+
+// randomly selects characters from appropriate character type array
+function getCorrectChar(num) {
+
+  if (num === LOWER)
+    return letterStr[genRandNum(0, letterStr.length - 1)];
+  else if (num === UPPER)
+    return letterStr[genRandNum(0, letterStr.length - 1)].toUpperCase();
+  else if (num === NUM)
+    return numberStr[genRandNum(0, numberStr.length - 1)];
+  else
+    return specCharStr[genRandNum(0, specCharStr.length - 1)];
 }
 
 // Starter code - Add event listener to generate button
