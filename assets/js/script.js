@@ -67,10 +67,15 @@ function resetVars() {
 function getLength() {
   while (true) {
 
-    // I need a number, not a string
-    length = Number(prompt("Enter password length from 8 to 128."));
+    length = prompt("Enter password length from 8 to 128.");
 
-    if ((length >= 8 && length <= 128) || length === null)
+    if ((length >= 8 && length <= 128)) {
+
+      // I need a number, not a string
+      length = Number(length);
+      return;
+    }
+    else if (length === null)
       return;
     else
       alert("Please enter a number from 8 to 128.");
@@ -220,8 +225,9 @@ function ensureAllCharTypesPresent(selectedCharType, cTypeToCheckFor, isTypePres
 
   // check array for presence of the type that was passed in
   neededTypes.forEach(function (arrEl) {
-    if (arrEl === cTypeToCheckFor);
-    checkForType = true;
+
+    if (arrEl === cTypeToCheckFor)
+      checkForType = true;
   });
 
   // change character type to force desired character type into end of password if necessary
